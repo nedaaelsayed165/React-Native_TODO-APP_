@@ -14,7 +14,7 @@ const Home = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    // Load todos from AsyncStorage when the app starts
+    
     const loadTodos = async () => {
       try {
         const storedTodos = await AsyncStorage.getItem('todos');
@@ -30,7 +30,7 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    // Save todos to AsyncStorage whenever they change
+    
     const saveTodos = async () => {
       try {
         await AsyncStorage.setItem('todos', JSON.stringify(todos));
