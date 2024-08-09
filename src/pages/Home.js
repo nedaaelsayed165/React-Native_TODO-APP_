@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, Button, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
-import { Divider, Icon } from 'react-native-elements';
+import { Dialog, Divider, Icon } from 'react-native-elements';
 import { v4 as uuidv4 } from 'uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native'; 
+import * as ScreenOrientation from 'expo-screen-orientation';
+// import { ImageBackground } from 'react-native-web';
+
 
 const Home = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState('All');
+  const [selectedTodoId, setSelectedTodoId] = useState(null); 
+  const [dialogVisible, setDialogVisible] = useState(false); 
 
   const navigation = useNavigation();
 
   useEffect(() => {
-    
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.DEFAULT);
     const loadTodos = async () => {
       try {
         const storedTodos = await AsyncStorage.getItem('todos');
@@ -25,12 +30,10 @@ const Home = () => {
         console.error("Failed to load todos", error);
       }
     };
-
     loadTodos();
   }, []);
 
   useEffect(() => {
-    
     const saveTodos = async () => {
       try {
         await AsyncStorage.setItem('todos', JSON.stringify(todos));
@@ -38,7 +41,6 @@ const Home = () => {
         console.error("Failed to save todos", error);
       }
     };
-
     saveTodos();
   }, [todos]);
 
@@ -50,8 +52,15 @@ const Home = () => {
     }
   };
 
-  const deleteTodo = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+  const confirmDelete = (id) => {
+    setSelectedTodoId(id);
+    setDialogVisible(true);
+  };
+
+  const deleteTodo = () => {
+    setTodos(todos.filter(todo => todo.id !== selectedTodoId));
+    setDialogVisible(false);
+    setSelectedTodoId(null);
   };
 
   const filteredTodos = todos.filter(todo => {
@@ -61,7 +70,13 @@ const Home = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      
+      <View style={styles.overlay}>
       <Text style={styles.header}>TODO APP</Text>
+      </View>
+    
+  
+      {/* <Text style={styles.header}>TODO APP</Text> */}
       <TextInput
         style={styles.input}
         placeholder="Title"
@@ -109,18 +124,30 @@ const Home = () => {
                       : todo
                   ));
                 }}
-                color="green"
+                color="black"
               />
               <Icon
                 name="delete"
                 type="material"
                 color="red"
-                onPress={() => deleteTodo(item.id)}
+                onPress={() => confirmDelete(item.id)}
               />
             </View>
           </TouchableOpacity>
         )}
       />
+
+      <Dialog
+        isVisible={dialogVisible}
+        onBackdropPress={() => setDialogVisible(false)}
+      >
+        <Dialog.Title title="Confirm Deletion" />
+        <Text>Are you sure you want to delete this task?</Text>
+        <Dialog.Actions>
+          <Dialog.Button title="No" onPress={() => setDialogVisible(false)} />
+          <Dialog.Button title="yes" onPress={deleteTodo} />
+        </Dialog.Actions>
+      </Dialog>
     </SafeAreaView>
   );
 };
@@ -190,6 +217,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 10,
   },
+ 
+ 
 });
 
 export default Home;

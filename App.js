@@ -3,12 +3,17 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import StackRoute from "./src/shared/StackRoute";
 import CompletedTasks from "./src/pages/CompletedTasks";
+import { Provider } from "react-redux";
+import store from "./src/redux/Store";
+
 
 const { Navigator, Screen } = createBottomTabNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
+      <Provider store={store}>
+
       <Navigator
         screenOptions={{
           headerBackVisible: false,
@@ -27,6 +32,7 @@ export default function App() {
         <Screen name="Main" options={{headerShown: false}} component={StackRoute} />
         <Screen name="Completed Task" component={CompletedTasks} />
       </Navigator>
+      </Provider>
     </NavigationContainer>
   );
 }
